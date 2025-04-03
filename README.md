@@ -1,6 +1,6 @@
 # spec2017-converter
 
-# 1. Execution Time of specs in INTEL and ARM machines
+# 1. Execution Time of specs in INTEL and ARM machines (seconds)
 
 |SPECS| LG Gram  (Intel 64) - 11th Gen. Intel Core i7-1165G7 2.80GHz, 16GB RAM | MacBook Pro 2022 Apple Silicon M2 (ARM 64), 8GB RAM |
 | --- | --- | --- |
