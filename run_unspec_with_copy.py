@@ -21,7 +21,7 @@ def find_target_dirs(root):
     return targets
 
 
-def process_benchmark(bench_dir, out_dir):
+def process_benchmark(bench_dir, out_dir, verbose=False):
     bench_name = os.path.basename(bench_dir.rstrip(os.sep))
     work_dir = os.path.join(out_dir, bench_name)
 
@@ -29,32 +29,42 @@ def process_benchmark(bench_dir, out_dir):
     if os.path.exists(work_dir):
         shutil.rmtree(work_dir)
     shutil.copytree(bench_dir, work_dir)
-    print(f"Copied benchmark {bench_name} to {work_dir}")
+    if verbose:
+        print(f"Copied benchmark {bench_name} to {work_dir}")
 
     # Apply unspec transformations
     target_dirs = find_target_dirs(work_dir)
     if not target_dirs:
-        print(f"No target directories found in {bench_name}. Marking as FAIL.")
+        if verbose:
+            print(f"No target directories found in {bench_name}. Marking as FAIL.")
         return False
     for tdir in target_dirs:
-        print(f"\n--- Unspeç directory: {tdir} ---")
+        if verbose:
+            print(f"\n--- Unspec directory: {tdir} ---")
         remove_makefiles(tdir)
         copy_makefile(tdir)
-        unspec_folder(tdir)
+        unspec_folder(tdir, verbose=verbose)
 
-    # Run check-unspec
+    # Run check-unspec (com --verbose, se ativo)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     check_script = os.path.join(script_dir, 'check_unspec.py')
-    print(f"Running check-unspec on {work_dir}")
-    result = subprocess.run(
-        [sys.executable, check_script, work_dir],
-        cwd=script_dir
-    )
+
+    check_cmd = [sys.executable, check_script, work_dir]
+    if verbose:
+        check_cmd.append('--verbose')
+    else:
+        check_cmd.append('--quiet')
+
+    result = subprocess.run(check_cmd, cwd=script_dir)
+    
+
     if result.returncode == 0:
-        print(f"check-unspec PASSED for {bench_name}")
+        if verbose:
+            print(f"check-unspec PASSED for {bench_name}")
         return True
     else:
-        print(f"check-unspec FAILED for {bench_name}")
+        if verbose:
+            print(f"check-unspec FAILED for {bench_name}")
         return False
 
 
@@ -77,6 +87,11 @@ def main():
         default=None,
         help="Optional single benchmark name to process, e.g. '500.s'"
     )
+    parser.add_argument(
+        '--verbose',
+        action='store_true',
+        help='Enable verbose output for debugging and tracing'
+    )
     args = parser.parse_args()
 
     benchspec_cpu = os.path.abspath(args.benchspec)
@@ -94,7 +109,7 @@ def main():
         if not os.path.isdir(bench_dir):
             continue
 
-        success = process_benchmark(bench_dir, out_dir)
+        success = process_benchmark(bench_dir, out_dir, verbose=args.verbose)
 
         # Move to final pass/fail directory
         src = os.path.join(out_dir, bench_name)
@@ -103,7 +118,8 @@ def main():
         if os.path.exists(dest):
             shutil.rmtree(dest)
         shutil.move(src, dest)
-        print(f"Moved {bench_name} to {dest_base} ({'PASS' if success else 'FAIL'})")
+        if args.verbose:
+            print(f"Moved {bench_name} to {dest_base} ({'PASS' if success else 'FAIL'})")
 
 
 if __name__ == '__main__':

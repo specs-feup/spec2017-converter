@@ -12,7 +12,6 @@ def remove_makefiles(target_dir):
                 file_path = os.path.join(root, file)
                 try:
                     os.remove(file_path)
-                    print(f"Deleted: {file_path}")
                 except Exception as e:
                     print(f"Failed to delete {file_path}: {e}")
 
@@ -27,7 +26,6 @@ def copy_makefile(target_dir):
 
     try:
         shutil.copy(source_makefile, target_makefile)
-        print(f"Makefile copied to {target_dir}")
     except Exception as e:
         print(f"Error copying Makefile: {e}")
 
@@ -87,7 +85,6 @@ def replace_line(file_path, old_line, new_line):
         try:
             with open(file_path, 'w', errors='ignore') as f:
                 f.writelines(lines)
-            print(f"Updated: {file_path}")
         except Exception as e:
             print(f"Error writing {file_path}: {e}")
 
@@ -124,7 +121,6 @@ def remove_if(file_path, start_line, remove_else=True):
         try:
             with open(file_path, 'w', errors='ignore') as f:
                 f.writelines(new_lines)
-            print(f"Modified: {file_path}")
         except Exception as e:
             print(f"Error writing {file_path}: {e}")
 
@@ -160,7 +156,6 @@ def remove_if_regex(file_path, pattern, remove_else=True):
         try:
             with open(file_path, 'w', errors='ignore') as f:
                 f.writelines(new_lines)
-            print(f"Modified (regex block removal): {file_path}")
         except Exception as e:
             print(f"Error writing {file_path}: {e}")
 
@@ -184,7 +179,6 @@ def remove_spec_tokens(file_path):
         try:
             with open(file_path, 'w', errors='ignore') as f:
                 f.write(content)
-            print(f"Removed SPEC tokens in {file_path}")
         except Exception as e:
             print(f"Error writing {file_path}: {e}")
 
@@ -218,7 +212,7 @@ def unspec_file(file_path):
     # Remove any stray SPEC tokens.
     remove_spec_tokens(file_path)
 
-def unspec_folder(folder_path):
+def unspec_folder(folder_path, verbose):
     for root, _, files in os.walk(folder_path):
         for file in files:
             if file.endswith(('.c', '.h', '.cpp')):
