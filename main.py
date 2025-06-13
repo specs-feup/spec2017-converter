@@ -16,6 +16,10 @@ program_dir/
 │   ├── mcf/
 │   │   ├── cleaner.py
 │   │   └── Makefile
+│   ├── namd/
+│   │   ├── apoa1.input
+│   │   ├── cleaner.py
+│   │   └── Makefile
 │   └── deepsjeng/
 │       ├── cleaner.py
 │       └── Makefile
@@ -69,7 +73,7 @@ class CPU2017Runner:
         print(f"✅ Libs directory found: {libs_dir}")
         
         # Check if cleaner directories exist
-        required_cleaners = ['mcf', 'lbm', 'deepsjeng']
+        required_cleaners = ['mcf', 'lbm', 'deepsjeng','namd']
         for cleaner in required_cleaners:
             cleaner_dir = libs_dir / cleaner
             cleaner_script = cleaner_dir / 'cleaner.py'
@@ -137,7 +141,8 @@ class CPU2017Runner:
         required_benchmarks = {
             '505.mcf_r': 'MCF',
             '519.lbm_r': 'LBM', 
-            '531.deepsjeng_r': 'Deepsjeng'
+            '531.deepsjeng_r': 'Deepsjeng',
+            '508.namd_r': 'namd'
         }
         
         missing_benchmarks = []
@@ -208,7 +213,7 @@ class CPU2017Runner:
         if benchmarks:
             print(f"🎯 Target benchmarks: {', '.join(benchmarks)}")
         else:
-            print("🎯 Target benchmarks: all (mcf, lbm, deepsjeng)")
+            print("🎯 Target benchmarks: all (mcf, lbm, deepsjeng, namd)")
         
         # Step 1: Validate inputs
         if not self.validate_inputs():
@@ -275,7 +280,7 @@ Examples:
   python3 main.py --iso-path "cpu2017-1_0_5.iso" --install-dir "cpu2017" --output-dir "cleaned_benchmarks"
   
   # Process specific benchmarks only
-  python3 main.py --benchmarks mcf lbm
+  python3 main.py --benchmarks mcf namd
   
   # Skip build testing and clean up after
   python3 main.py --no-build-test --cleanup
@@ -296,6 +301,10 @@ Required files in current directory:
   │   ├── lbm/
   │   │   ├── cleaner.py
   │   │   └── Makefile
+  │   ├── namd/
+  │   │   ├── apoa1.input
+  │   │   ├── cleaner.py
+  │   │   └── Makefile
   │   └── deepsjeng/
   │       ├── cleaner.py
   │       └── Makefile
@@ -303,12 +312,16 @@ Required files in current directory:
       └── benchspec/
           └── CPU/
               ├── 505.mcf_r/src/
+              ├── 508.namd_r/src/
               ├── 519.lbm_r/src/
               └── 531.deepsjeng_r/src/
 
 Output structure after processing:
   benchmarks_cleaned/
   ├── mcf/
+  │   ├── [cleaned source files]
+  │   └── Makefile
+  ├── namd/
   │   ├── [cleaned source files]
   │   └── Makefile
   ├── lbm/
@@ -341,7 +354,7 @@ Output structure after processing:
     parser.add_argument(
         '--benchmarks',
         nargs='*',
-        choices=['mcf', 'lbm', 'deepsjeng'],
+        choices=['mcf', 'lbm', 'deepsjeng','namd'],
         help='Specific benchmarks to process (default: all)'
     )
     

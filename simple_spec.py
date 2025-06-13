@@ -13,6 +13,10 @@ program_dir/
 │   │   └── Makefile
 │   ├── mcf/
 │   │   ├── cleaner.py
+│   │   └── Makefile│
+|   ├── namd/
+│   │   ├── apoa1.input
+│   │   ├── cleaner.py
 │   │   └── Makefile
 │   └── deepsjeng/
 │       ├── cleaner.py
@@ -60,6 +64,12 @@ class SimpleSpec:
                 'spec_path': '531.deepsjeng_r/src',
                 'cleaner_dir': 'deepsjeng',
                 'description': 'Chess playing engine'
+            },
+            'namd': {
+                'name': 'NAMD (Nanoscale Molecular Dynamics)',
+                'spec_path': '508.namd_r/src',
+                'cleaner_dir': 'namd',
+                'description': 'Scalable Molecular Dynamics software'
             }
         }
 
@@ -499,7 +509,7 @@ Examples:
   python3 simple_spec.py --output-dir "./my_cleaned_benchmarks"
 
   # Process specific benchmarks only
-  python3 simple_spec.py --benchmarks mcf lbm
+  python3 simple_spec.py --benchmarks mcf namd
 
 Expected directory structure:
   main_dir/
@@ -507,6 +517,7 @@ Expected directory structure:
   │   └── benchspec/
   │       └── CPU/
   │           ├── 505.mcf_r/src/
+  │           ├── 508.namd_r/src/
   │           ├── 519.lbm_r/src/
   │           └── 531.deepsjeng_r/src/
   ├── libs/
@@ -514,6 +525,10 @@ Expected directory structure:
   │   │   ├── cleaner.py
   │   │   └── Makefile
   │   ├── mcf/
+  │   │   ├── cleaner.py
+  │   │   └── Makefile│
+  │   ├── namd/
+  │   │   ├── apoa1.input
   │   │   ├── cleaner.py
   │   │   └── Makefile
   │   └── deepsjeng/
@@ -523,6 +538,7 @@ Expected directory structure:
   └── benchmarks_cleaned/  (created by script)
       ├── mcf/
       ├── lbm/
+      ├── namd/
       └── deepsjeng/
         """
     )
@@ -542,7 +558,7 @@ Expected directory structure:
     parser.add_argument(
         '--benchmarks',
         nargs='*',
-        choices=['mcf', 'lbm', 'deepsjeng'],
+        choices=['mcf', 'lbm', 'deepsjeng','namd'],
         help='Specific benchmarks to process (default: all)'
     )
 
