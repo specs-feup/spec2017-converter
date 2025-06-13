@@ -7,6 +7,23 @@ This script orchestrates the complete process:
 2. Run Simple SPEC to process benchmarks
 3. Clean up and provide summary
 
+Directory structure expected:
+program_dir/
+├── libs/
+│   ├── lbm/
+│   │   ├── cleaner.py
+│   │   └── Makefile
+│   ├── mcf/
+│   │   ├── cleaner.py
+│   │   └── Makefile
+│   └── deepsjeng/
+│       ├── cleaner.py
+│       └── Makefile
+├── main.py (this script)
+├── installation.py
+├── simple_spec.py
+└── cpu2017-1_0_5.iso
+
 Usage:
     python3 main.py [options]
     python3 main.py --iso-path "cpu2017-1_0_5.iso"
@@ -43,10 +60,18 @@ class CPU2017Runner:
         
         print(f"✅ ISO file found: {self.iso_path}")
         
+        # Check if libs directory exists
+        libs_dir = self.script_dir / 'libs'
+        if not libs_dir.exists():
+            print(f"❌ Libs directory not found: {libs_dir}")
+            return False
+        
+        print(f"✅ Libs directory found: {libs_dir}")
+        
         # Check if cleaner directories exist
         required_cleaners = ['mcf', 'lbm', 'deepsjeng']
         for cleaner in required_cleaners:
-            cleaner_dir = self.script_dir / cleaner
+            cleaner_dir = libs_dir / cleaner
             cleaner_script = cleaner_dir / 'cleaner.py'
             makefile = cleaner_dir / 'Makefile'
             
@@ -60,7 +85,7 @@ class CPU2017Runner:
                 print(f"❌ Makefile missing: {makefile}")
                 return False
         
-        print("✅ All cleaner directories and files found")
+        print("✅ All cleaner directories and files found in libs/ folder")
         return True
 
     def install_cpu2017(self):
@@ -259,18 +284,38 @@ Examples:
   python3 main.py -v
 
 Required files in current directory:
+  main_dir/
   ├── main.py (this script)
   ├── installation.py
   ├── simple_spec.py
   ├── cpu2017-1_0_5.iso (or specified ISO)
+  ├── libs/
+  │   ├── mcf/
+  │   │   ├── cleaner.py
+  │   │   └── Makefile
+  │   ├── lbm/
+  │   │   ├── cleaner.py
+  │   │   └── Makefile
+  │   └── deepsjeng/
+  │       ├── cleaner.py
+  │       └── Makefile
+  └── cpu2017/ (created during installation)
+      └── benchspec/
+          └── CPU/
+              ├── 505.mcf_r/src/
+              ├── 519.lbm_r/src/
+              └── 531.deepsjeng_r/src/
+
+Output structure after processing:
+  benchmarks_cleaned/
   ├── mcf/
-  │   ├── cleaner.py
+  │   ├── [cleaned source files]
   │   └── Makefile
   ├── lbm/
-  │   ├── cleaner.py
+  │   ├── [cleaned source files]
   │   └── Makefile
   └── deepsjeng/
-      ├── cleaner.py
+      ├── [cleaned source files]
       └── Makefile
         """
     )

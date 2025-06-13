@@ -7,15 +7,16 @@ cleaner scripts and makefiles.
 
 Directory structure expected:
 program_dir/
-├── lbm/
-│   ├── cleaner.py
-│   └── Makefile
-├── mcf/
-│   ├── cleaner.py
-│   └── Makefile
-├── deepsjeng/
-│   ├── cleaner.py
-│   └── Makefile
+├── libs/
+│   ├── lbm/
+│   │   ├── cleaner.py
+│   │   └── Makefile
+│   ├── mcf/
+│   │   ├── cleaner.py
+│   │   └── Makefile
+│   └── deepsjeng/
+│       ├── cleaner.py
+│       └── Makefile
 └── simple_spec.py (this script)
 
 Usage:
@@ -38,6 +39,7 @@ class SimpleSpec:
         self.output_dir = Path(output_dir)
         self.verbose = verbose
         self.script_dir = Path(__file__).parent
+        self.libs_dir = self.script_dir / 'libs'  # Add libs directory path
 
         # Benchmark configurations
         self.benchmarks = {
@@ -68,10 +70,16 @@ class SimpleSpec:
         missing = []
 
         if self.verbose:
-            print(f"🔍 Checking cleaner structure in: {self.script_dir}")
+            print(f"🔍 Checking cleaner structure in: {self.libs_dir}")
+
+        # Check if libs directory exists
+        if not self.libs_dir.exists():
+            missing.append(f"Libs directory: {self.libs_dir}")
+            print(f"\n❌ Missing libs directory: {self.libs_dir}")
+            return False
 
         for benchmark, config in self.benchmarks.items():
-            cleaner_dir = self.script_dir / config['cleaner_dir']
+            cleaner_dir = self.libs_dir / config['cleaner_dir']  # Changed from self.script_dir to self.libs_dir
             cleaner_script = cleaner_dir / 'cleaner.py'
             makefile = cleaner_dir / 'Makefile'
 
@@ -104,10 +112,11 @@ class SimpleSpec:
             if self.verbose:
                 print("\nExpected structure:")
                 print(f"{self.script_dir}/")
+                print("├── libs/")
                 for benchmark, config in self.benchmarks.items():
-                    print(f"├── {config['cleaner_dir']}/")
-                    print(f"│   ├── cleaner.py")
-                    print(f"│   └── Makefile")
+                    print(f"│   ├── {config['cleaner_dir']}/")
+                    print(f"│   │   ├── cleaner.py")
+                    print(f"│   │   └── Makefile")
             return False
 
         return True
@@ -146,8 +155,8 @@ class SimpleSpec:
         """Run the cleaner for a specific benchmark."""
         config = self.benchmarks[benchmark]
 
-        # Paths
-        cleaner_dir = self.script_dir / config['cleaner_dir']
+        # Paths - Updated to use libs_dir
+        cleaner_dir = self.libs_dir / config['cleaner_dir']  # Changed from self.script_dir to self.libs_dir
         cleaner_script = cleaner_dir / 'cleaner.py'
         spec_src_path = self.cpu2017_dir / 'benchspec' / 'CPU' / config['spec_path']
         output_path = self.output_dir / benchmark
@@ -266,7 +275,7 @@ class SimpleSpec:
         """Copy the Makefile to the cleaned benchmark directory."""
         config = self.benchmarks[benchmark]
 
-        makefile_src = self.script_dir / config['cleaner_dir'] / 'Makefile'
+        makefile_src = self.libs_dir / config['cleaner_dir'] / 'Makefile'  # Changed from self.script_dir to self.libs_dir
         output_path = self.output_dir / benchmark
         makefile_dst = output_path / 'Makefile'
 
@@ -388,6 +397,7 @@ class SimpleSpec:
         print("🚀 Starting Simple SPEC processing...")
         if self.verbose:
             print(f"Script directory: {self.script_dir}")
+            print(f"Libs directory: {self.libs_dir}")  # Add libs directory info
             print(f"CPU2017 directory: {self.cpu2017_dir}")
             print(f"Output directory: {self.output_dir}")
             print(f"Benchmarks to process: {', '.join(benchmarks)}")
@@ -499,15 +509,16 @@ Expected directory structure:
   │           ├── 505.mcf_r/src/
   │           ├── 519.lbm_r/src/
   │           └── 531.deepsjeng_r/src/
-  ├── lbm/
-  │   ├── cleaner.py
-  │   └── Makefile
-  ├── mcf/
-  │   ├── cleaner.py
-  │   └── Makefile
-  ├── deepsjeng/
-  │   ├── cleaner.py
-  │   └── Makefile
+  ├── libs/
+  │   ├── lbm/
+  │   │   ├── cleaner.py
+  │   │   └── Makefile
+  │   ├── mcf/
+  │   │   ├── cleaner.py
+  │   │   └── Makefile
+  │   └── deepsjeng/
+  │       ├── cleaner.py
+  │       └── Makefile
   ├── simple_spec.py
   └── benchmarks_cleaned/  (created by script)
       ├── mcf/

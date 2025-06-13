@@ -12,37 +12,42 @@ This project automatically processes three key SPEC CPU2017 benchmarks:
 
 ## Features
 
-✅ **Removes SPEC-specific code** - Strips proprietary modifications
-✅ **Restores original functionality** - Brings back timing, randomization, UCI interface
-✅ **Multi-compiler support** - GCC, Clang, and NVCC
-✅ **Cross-platform** - Linux, macOS, Windows
-✅ **Automated batch processing** - Process all benchmarks with one command
-✅ **Comprehensive build system** - Debug, release, profiling, sanitizers
+✅ **Automated ISO Installation** - Installs CPU2017 from ISO across platforms  
+✅ **Removes SPEC-specific code** - Strips proprietary modifications  
+✅ **Restores original functionality** - Brings back timing, randomization, UCI interface  
+✅ **Multi-compiler support** - GCC, Clang, and NVCC  
+✅ **Cross-platform** - Linux, macOS, Windows  
+✅ **Automated batch processing** - Process all benchmarks with one command  
+✅ **Comprehensive build system** - Debug, release, profiling, sanitizers  
 
 ## Project Structure
 
 ```
 spec-unspeccer/
-├── cpu2017/                          # Your SPEC CPU2017 installation
+├── main.py                          # Main orchestrator script
+├── installation.py                  # ISO installation module
+├── simple_spec.py                   # Benchmark processing module
+├── cpu2017-1_0_5.iso               # Your SPEC CPU2017 ISO file
+├── libs/                           # Cleaner libraries directory
+│   ├── mcf/
+│   │   ├── cleaner.py              # MCF-specific cleaner
+│   │   └── Makefile                # MCF multi-compiler Makefile
+│   ├── lbm/
+│   │   ├── cleaner.py              # LBM-specific cleaner
+│   │   └── Makefile                # LBM multi-compiler Makefile
+│   └── deepsjeng/
+│       ├── cleaner.py              # Deepsjeng-specific cleaner
+│       └── Makefile                # Deepsjeng multi-compiler Makefile
+├── cpu2017/                        # CPU2017 installation (created automatically)
 │   └── benchspec/CPU/
-│       ├── 505.mcf_r/src/           # MCF source files
-│       ├── 519.lbm_r/src/           # LBM source files
-│       └── 531.deepsjeng_r/src/     # Deepsjeng source files
-├── mcf/
-│   ├── cleaner.py                   # MCF-specific cleaner
-│   └── Makefile                     # MCF multi-compiler Makefile
-├── lbm/
-│   ├── cleaner.py                   # LBM-specific cleaner
-│   └── Makefile                     # LBM multi-compiler Makefile
-├── deepsjeng/
-│   ├── cleaner.py                   # Deepsjeng-specific cleaner
-│   └── Makefile                     # Deepsjeng multi-compiler Makefile
-├── spec_batch_cleaner.py            # Main batch processing script
-├── benchmarks_cleaned/              # Output directory (created automatically)
-│   ├── mcf/                        # Cleaned MCF benchmark
-│   ├── lbm/                        # Cleaned LBM benchmark
-│   └── deepsjeng/                  # Cleaned Deepsjeng benchmark
-└── README.md                       # This file
+│       ├── 505.mcf_r/src/         # MCF source files
+│       ├── 519.lbm_r/src/         # LBM source files
+│       └── 531.deepsjeng_r/src/   # Deepsjeng source files
+├── benchmarks_cleaned/             # Output directory (created automatically)
+│   ├── mcf/                       # Cleaned MCF benchmark
+│   ├── lbm/                       # Cleaned LBM benchmark
+│   └── deepsjeng/                 # Cleaned Deepsjeng benchmark
+└── README.md                      # This file
 ```
 
 ## Prerequisites
@@ -52,6 +57,7 @@ spec-unspeccer/
 - **Python 3.6+** - For running the cleaning scripts
 - **Make** - For building the benchmarks
 - **A C/C++ compiler** - GCC, Clang, or NVCC
+- **7-Zip** (Windows) or **mount utilities** (Linux/macOS) - For ISO extraction/mounting
 
 ### Optional but Recommended
 
@@ -62,20 +68,26 @@ spec-unspeccer/
 
 ## Setup
 
-### 1. Install Compilers
+### 1. Install System Dependencies
 
 #### Linux (Ubuntu/Debian)
 
 ```bash
-# GCC (recommended for performance)
+# Essential tools
 sudo apt update
-sudo apt install gcc g++ make
+sudo apt install python3 make
+
+# GCC (recommended for performance)
+sudo apt install gcc g++
 
 # Clang (good for development)
 sudo apt install clang
 
 # OpenMP support
 sudo apt install libomp-dev
+
+# For ISO mounting (usually pre-installed)
+sudo apt install mount
 
 # CUDA (optional)
 # Follow NVIDIA CUDA installation guide
@@ -84,10 +96,10 @@ sudo apt install libomp-dev
 #### macOS
 
 ```bash
-# Install Xcode Command Line Tools (includes Clang)
+# Install Xcode Command Line Tools (includes Clang and make)
 xcode-select --install
 
-# Install Homebrew
+# Install Homebrew if not already installed
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # Install real GCC for better performance (optional)
@@ -96,6 +108,9 @@ brew install gcc
 # Install OpenMP for Clang
 brew install libomp
 
+# Python3 should be pre-installed, but you can update it
+brew install python3
+
 # CUDA (optional)
 # Download from NVIDIA website
 ```
@@ -103,11 +118,17 @@ brew install libomp
 #### Windows
 
 ```bash
-# Using MSYS2/MinGW-w64
+# Install 7-Zip (required for ISO extraction)
+# Download from https://www.7-zip.org/
+
+# Using MSYS2/MinGW-w64 for Unix-like environment
 # Download from https://www.msys2.org/
 
 # Or Visual Studio Build Tools
 # Download from Microsoft
+
+# Python 3
+# Download from https://www.python.org/
 ```
 
 ### 2. Verify Installation
@@ -123,37 +144,73 @@ nvcc --version     # Optional
 
 # Check make
 make --version
+
+# Check 7-Zip (Windows only)
+7z --help         # Windows
 ```
 
 ## Quick Start
 
-### 1. Place SPEC CPU2017 Source
+### 1. Place Files
 
-Ensure your SPEC CPU2017 source is in the expected location:
+Ensure you have the required files in your project directory:
 
 ```
-./cpu2017/benchspec/CPU/505.mcf_r/src/
-./cpu2017/benchspec/CPU/519.lbm_r/src/
-./cpu2017/benchspec/CPU/531.deepsjeng_r/src/
+your_project/
+├── main.py
+├── installation.py
+├── simple_spec.py
+├── cpu2017-1_0_5.iso              # Your SPEC CPU2017 ISO
+└── libs/
+    ├── mcf/
+    │   ├── cleaner.py
+    │   └── Makefile
+    ├── lbm/
+    │   ├── cleaner.py
+    │   └── Makefile
+    └── deepsjeng/
+        ├── cleaner.py
+        └── Makefile
 ```
 
-### 2. Run Batch Cleaner
+### 2. Run Complete Process
 
 ```bash
-# Process all benchmarks with default settings
-python3 spec_batch_cleaner.py
+# Basic usage - installs CPU2017 and processes all benchmarks
+python3 main.py
 
 # With verbose output
-python3 spec_batch_cleaner.py -v
+python3 main.py -v
 
 # Custom paths
-python3 spec_batch_cleaner.py --cpu2017-dir "./my_cpu2017" --output-dir "./my_output"
+python3 main.py --iso-path "cpu2017-1_0_5.iso" --install-dir "cpu2017" --output-dir "cleaned_benchmarks"
 
 # Process specific benchmarks only
-python3 spec_batch_cleaner.py --benchmarks mcf lbm
+python3 main.py --benchmarks mcf lbm
+
+# Skip build testing to save time
+python3 main.py --no-build-test
+
+# Clean up CPU2017 installation after processing
+python3 main.py --cleanup
 ```
 
-### 3. Build and Test
+### 3. Manual Processing (Alternative)
+
+If you already have CPU2017 installed, you can use the processing script directly:
+
+```bash
+# Process all benchmarks with existing CPU2017 installation
+python3 simple_spec.py --cpu2017-dir "./cpu2017"
+
+# Process specific benchmarks
+python3 simple_spec.py --benchmarks mcf lbm
+
+# Custom output directory
+python3 simple_spec.py --output-dir "./my_cleaned_benchmarks"
+```
+
+### 4. Build and Test
 
 ```bash
 # Navigate to a cleaned benchmark
@@ -165,6 +222,34 @@ make
 # Test the build
 make test
 ```
+
+## Main Script Usage
+
+The `main.py` script orchestrates the complete workflow:
+
+### Command Line Options
+
+```bash
+python3 main.py [options]
+
+Options:
+  --iso-path PATH       Path to CPU2017 ISO file (default: cpu2017-1_0_5.iso)
+  --install-dir DIR     CPU2017 installation directory (default: cpu2017)
+  --output-dir DIR      Output directory for cleaned benchmarks (default: benchmarks_cleaned)
+  --benchmarks LIST     Specific benchmarks to process: mcf, lbm, deepsjeng (default: all)
+  --no-build-test       Skip build testing after cleaning
+  --cleanup             Remove CPU2017 installation after processing
+  -v, --verbose         Verbose output
+  -h, --help           Show help message
+```
+
+### Workflow Steps
+
+1. **Validation** - Checks for ISO file and cleaner libraries
+2. **Installation** - Extracts/mounts ISO and runs CPU2017 installer
+3. **Processing** - Runs cleaners to remove proprietary code
+4. **Building** - Tests that cleaned code compiles successfully
+5. **Cleanup** - Optionally removes temporary installation files
 
 ## Build Options
 
@@ -303,6 +388,27 @@ make test
 # For actual chess play, you'd integrate with a UCI-compatible interface
 ```
 
+## Platform-Specific Notes
+
+### Linux
+
+- Uses `mount` command to mount ISO files
+- Requires `sudo` for mounting operations
+- Supports both GCC and Clang compilers out of the box
+
+### macOS
+
+- Uses `hdiutil` for ISO mounting (built-in)
+- Clang is the default compiler (from Xcode Command Line Tools)
+- GCC can be installed via Homebrew for better numerical performance
+
+### Windows
+
+- Uses 7-Zip for ISO extraction (must be installed separately)
+- Runs `.bat` installer instead of shell script
+- MSYS2/MinGW-w64 recommended for Unix-like build environment
+- Visual Studio Build Tools also supported
+
 ## Performance Tips
 
 ### For Maximum Performance
@@ -344,7 +450,38 @@ make CC=nvcc cuda-release
 
 ## Troubleshooting
 
-### Common Issues
+### Installation Issues
+
+#### ISO Not Found
+
+```bash
+# Ensure ISO file exists and path is correct
+ls -la cpu2017-1_0_5.iso
+
+# Try absolute path
+python3 main.py --iso-path "/full/path/to/cpu2017-1_0_5.iso"
+```
+
+#### Permission Denied (Linux/macOS)
+
+```bash
+# Ensure you can use sudo for mounting
+sudo echo "Sudo access verified"
+
+# On some systems, you might need to add user to disk group
+sudo usermod -a -G disk $USER
+# Log out and back in
+```
+
+#### 7-Zip Not Found (Windows)
+
+```bash
+# Install 7-Zip from https://www.7-zip.org/
+# Or add to PATH if already installed
+set PATH=%PATH%;C:\Program Files\7-Zip
+```
+
+### Build Issues
 
 #### OpenMP Not Found (macOS)
 
@@ -461,26 +598,29 @@ make CC=pgcc CXX=pgc++
 
 ### Adding New Benchmarks
 
-1. Create a new directory: `mkdir new_benchmark/`
+1. Create a new directory: `mkdir libs/new_benchmark/`
 2. Add `cleaner.py` script following existing patterns
 3. Add `Makefile` with multi-compiler support
-4. Update `spec_batch_cleaner.py` to include new benchmark
+4. Update `simple_spec.py` to include new benchmark
+5. Update `main.py` validation if needed
 
 ### Improving Cleaners
 
-1. Test with individual cleaner: `python3 cleaner.py input/ output/`
+1. Test with individual cleaner: `python3 libs/benchmark/cleaner.py input/ output/`
 2. Verify functionality of cleaned code
 3. Update patterns in cleaner script
-4. Test with batch cleaner
+4. Test with batch cleaner: `python3 simple_spec.py --benchmarks benchmark`
 
 ### Reporting Issues
 
 Please include:
 
 - Operating system and version
+- Python version (`python3 --version`)
 - Compiler versions (`gcc --version`, `clang --version`)
 - Full error output with `-v` flag
 - Steps to reproduce
+- ISO file name and version if installation-related
 
 ## License
 
@@ -492,12 +632,5 @@ This project restores SPEC CPU2017 benchmarks to their original open-source vers
 
 The cleaning scripts and build system are provided under MIT license.
 
-## Acknowledgments
-
-- Original benchmark authors
-- SPEC CPU2017 consortium
-- Open source communities maintaining the original codebases
-
----
 
 **Note**: This tool removes SPEC-specific modifications to restore original functionality. It is intended for research, education, and development purposes. For official SPEC benchmarking, use the original SPEC CPU2017 suite.
