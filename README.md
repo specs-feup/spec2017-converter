@@ -12,13 +12,13 @@ This project automatically processes three key SPEC CPU2017 benchmarks:
 
 ## Features
 
-✅ **Automated ISO Installation** - Installs CPU2017 from ISO across platforms  
-✅ **Removes SPEC-specific code** - Strips proprietary modifications  
-✅ **Restores original functionality** - Brings back timing, randomization, UCI interface  
-✅ **Multi-compiler support** - GCC, Clang, and NVCC  
-✅ **Cross-platform** - Linux, macOS, Windows  
-✅ **Automated batch processing** - Process all benchmarks with one command  
-✅ **Comprehensive build system** - Debug, release, profiling, sanitizers  
+**Automated ISO Installation** - Installs CPU2017 from ISO across platforms  
+**Removes SPEC-specific code** - Strips proprietary modifications  
+**Restores original functionality** - Brings back timing, randomization, UCI interface  
+**Multi-compiler support** - GCC, Clang, and NVCC  
+**Cross-platform** - Linux, macOS, Windows  
+**Automated batch processing** - Process all benchmarks with one command  
+**Comprehensive build system** - Debug, release, profiling, sanitizers  
 
 ## Project Structure
 
