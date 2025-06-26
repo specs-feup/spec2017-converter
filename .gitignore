@@ -1,2 +1,7 @@
 benchmarks_cleaned/
 __pycache__/
+cpu2017-1_0_5.iso
+package-lock.json
+package.json
+node_modules/
+cpu2017/
